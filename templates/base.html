@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0E1B2E">
+  <title>{% block title %}Adriê Gourmet{% endblock %} — Empadas, salgados e bolos</title>
+  <link rel="icon" href="{% static 'img/logo.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/loyalty.css' %}">
+  <style>
+    /* Avisos (messages): flutuam no topo e somem sozinhos */
+    .messages { position:fixed; top:calc(env(safe-area-inset-top, 0px) + 12px); left:50%; transform:translateX(-50%);
+      z-index:1000; width:min(92vw, 420px); margin:0; padding:0; list-style:none;
+      display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    .messages li { pointer-events:auto; cursor:pointer; margin:0; padding:12px 16px; border-radius:12px;
+      background:#0E1B2E; color:#fff; border:0; border-left:4px solid #C9A24B; font-size:.95rem; line-height:1.35;
+      box-shadow:0 10px 30px rgba(14,27,46,.28); animation:toast-in .3s ease both;
+      transition:opacity .35s ease, transform .35s ease; }
+    .messages li.success { border-left-color:#3aa76d; }
+    .messages li.error, .messages li.danger { border-left-color:#e0574b; }
+    .messages li.warning { border-left-color:#e0a23b; }
+    .messages li.is-hiding { opacity:0; transform:translateY(-10px); }
+    @keyframes toast-in { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:none; } }
+    @media (prefers-reduced-motion: reduce) { .messages li { animation:none; transition:none; } }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}has-tabbar{% endblock %}">
+
+  {# Capa + logo redonda + dados da loja (só nas páginas que preencherem este bloco) #}
+  {% block hero %}{% endblock %}
+
+  <main class="container">
+    {% if messages %}
+      <ul class="messages" role="status">
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block footer %}
+  <footer class="site-footer">
+    <div class="container">
+      Entregamos em até {{ DELIVERY_RADIUS_KM|floatformat:"-1"|default:"3" }} km da loja. Fora disso, você pode retirar no local ou deixar um recado que a gente responde.
+    </div>
+  </footer>
+  {% endblock %}
+
+  {# Navbar inferior (as telas de pedido escondem esta barra) #}
+  {% block tabbar %}
+  {% with current=request.resolver_match.view_name %}
+  <nav class="tabbar" aria-label="Navegação principal">
+    <a href="{% url 'catalog:product_list' %}"
+       class="tab {% if current == 'catalog:product_list' or current == 'catalog:product_list_by_category' or current == 'catalog:product_detail' %}is-active{% endif %}"
+       {% if current == 'catalog:product_list' %}aria-current="page"{% endif %}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      <span>Início</span>
+    </a>
+
+    <a href="{% url 'loyalty:home' %}" class="tab {% if current == 'loyalty:home' %}is-active{% endif %}"
+       {% if current == 'loyalty:home' %}aria-current="page"{% endif %}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.4 1.7 2.9-.2 1 2.7 2.5 1.5-.7 2.8 1 2.7-2 2.1-.3 2.9-2.8.8-1.9 2.2-2.6-1.2-2.6 1.2-1.9-2.2-2.8-.8-.3-2.9-2-2.1 1-2.7-.7-2.8 2.5-1.5 1-2.7 2.9.2z"/><path d="M9 15l6-6M9.5 9.5h.01M14.5 14.5h.01"/></svg>
+      <span>Promoções</span>
+    </a>
+
+    <a href="{% url 'cart:detail' %}" class="tab {% if current == 'cart:detail' %}is-active{% endif %}">
+      <span class="tab-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9.5 14l1.8 1.8 3.2-3.4"/></svg>
+        <span class="tab-badge {% if not cart or cart|length == 0 %}is-hidden{% endif %}">{{ cart|length }}</span>
+      </span>
+      <span>Pedidos</span>
+    </a>
+
+    <a href="{% url 'orders:profile' %}" class="tab {% if current == 'orders:profile' or current == 'orders:profile_edit' %}is-active{% endif %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1z"/></svg>
+      <span>Perfil</span>
+    </a>
+
+    <a href="{% url 'catalog:about' %}" class="tab {% if current == 'catalog:about' or current == 'catalog:contact' %}is-active{% endif %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+      <span>Sobre</span>
+    </a>
+  </nav>
+  {% endwith %}
+  {% endblock %}
+
+  <script>
+    (function () {
+      document.querySelectorAll(".messages li").forEach(function (li) {
+        function hide() {
+          li.classList.add("is-hiding");
+          setTimeout(function () { li.remove(); }, 400);
+        }
+        var slow = li.classList.contains("error") || li.classList.contains("warning");
+        setTimeout(hide, slow ? 6000 : 3000);
+        li.addEventListener("click", hide);
+      });
+    })();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

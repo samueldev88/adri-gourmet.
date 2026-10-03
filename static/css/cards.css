@@ -1,0 +1,56 @@
+/* Cards de produto estilo apps de delivery — usa as variáveis do style.css */
+.product-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:20px 0 110px; }
+@media (min-width:640px){ .product-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; } }
+@media (min-width:960px){ .product-grid{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
+
+.pc { background:var(--paper); border:1px solid var(--line); border-radius:16px; overflow:hidden;
+  display:flex; flex-direction:column; box-shadow:0 2px 10px rgba(32,26,16,.06); }
+.pc__media { position:relative; aspect-ratio:1/1; background:var(--bg); }
+.pc__link { position:absolute; inset:0; display:block; }
+.pc__link img { width:100%; height:100%; object-fit:cover; display:block; }
+.pc__ph { width:100%; height:100%; display:grid; place-items:center; font-size:3rem;
+  background:linear-gradient(135deg,var(--bg),var(--line)); }
+
+.pc__badge { position:absolute; top:10px; left:10px; background:var(--gold-light); color:var(--navy-dark);
+  font-size:.75rem; font-weight:700; padding:4px 9px; border-radius:999px; }
+
+.pc__ctl { position:absolute; right:10px; bottom:10px; z-index:2; }
+.pc__ctl form { margin:0; }
+.pc__add { width:42px; height:42px; border-radius:50%; border:0; background:var(--navy); color:#fff;
+  font-size:1.6rem; line-height:1; display:grid; place-items:center; cursor:pointer;
+  box-shadow:0 4px 12px rgba(14,27,46,.35); transition:transform .12s ease, background .12s ease; }
+.pc__add:hover { background:var(--navy-dark); }
+.pc__add:active { transform:scale(.92); }
+
+.pc__stepper { display:flex; align-items:center; background:var(--paper); border-radius:999px; padding:3px;
+  box-shadow:0 4px 12px rgba(14,27,46,.3); }
+.pc__stepper button { width:34px; height:34px; border-radius:50%; border:0; background:var(--navy); color:#fff;
+  font-size:1.2rem; line-height:1; display:grid; place-items:center; cursor:pointer; }
+.pc__stepper button:active { transform:scale(.92); }
+.pc__qty { min-width:28px; text-align:center; font-weight:700; color:var(--navy-dark); font-size:.95rem; }
+
+.pc__body { padding:10px 12px 14px; display:flex; flex-direction:column; gap:6px; flex-grow:1; }
+.pc__name { color:var(--navy-dark); font-weight:600; font-size:.95rem; line-height:1.25; text-decoration:none;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.5em; }
+.pc__name:hover { text-decoration:none; }
+.pc__price { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-top:auto; }
+.pc__now { font-weight:800; font-size:1.05rem; color:var(--navy-dark); }
+.pc__old { font-size:.8rem; color:var(--ink-muted); text-decoration:line-through; }
+
+.pc.is-soldout .pc__link img, .pc.is-soldout .pc__ph { filter:grayscale(1); opacity:.55; }
+.pc__soldout { position:absolute; right:10px; bottom:10px; background:rgba(14,27,46,.88); color:#fff;
+  font-size:.75rem; font-weight:700; padding:6px 12px; border-radius:999px; }
+
+/* Barra fixa "Ver sacola" (fica acima da tabbar) */
+.cart-bar { position:fixed; left:50%; transform:translateX(-50%); z-index:50;
+  bottom:calc(84px + env(safe-area-inset-bottom, 0px)); width:min(92vw,520px);
+  display:flex; align-items:center; gap:12px; padding:14px 18px; border-radius:16px;
+  background:var(--navy); color:#fff; text-decoration:none; font-weight:700;
+  box-shadow:0 12px 30px rgba(14,27,46,.35); animation:cb-in .25s ease both; }
+.cart-bar:hover { text-decoration:none; background:var(--navy-dark); }
+.cart-bar__count { background:var(--gold-light); color:var(--navy-dark); min-width:26px; height:26px; border-radius:999px;
+  display:grid; place-items:center; font-size:.85rem; padding:0 8px; }
+.cart-bar__label { flex:1; }
+.cart-bar svg { width:20px; height:20px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+@keyframes cb-in { from{ opacity:0; transform:translate(-50%,12px);} to{ opacity:1; transform:translate(-50%,0);} }
+@media (prefers-reduced-motion:reduce){ .cart-bar{ animation:none; } }

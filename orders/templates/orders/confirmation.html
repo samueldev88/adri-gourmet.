@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Pedido #{{ order.id }}{% endblock %}
+{% block extra_head %}{% if awaiting_payment %}<meta http-equiv="refresh" content="6">{% endif %}{% endblock %}
+{% block body_class %}has-bag{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block content %}
+<section class="bag">
+  <div class="done">
+    {% if awaiting_payment %}
+      <div class="done__icon is-wait" aria-hidden="true">&#8987;</div>
+      <h1>Pedido #{{ order.id }}</h1>
+      <p>Aguardando a confirmação do pagamento. Esta página atualiza sozinha.</p>
+    {% elif order.status == "cancelado" %}
+      <div class="done__icon is-wait" aria-hidden="true">!</div>
+      <h1>Pedido #{{ order.id }} cancelado</h1>
+      <p>Se foi engano, é só fazer um novo pedido.</p>
+    {% else %}
+      <div class="done__icon" aria-hidden="true">&#10003;</div>
+      <h1>Pedido #{{ order.id }} recebido!</h1>
+      <p>Obrigado{% if is_owner %}, {{ order.customer_name|truncatewords:1 }}{% endif %}! A gente já vai cuidar do seu pedido.</p>
+    {% endif %}
+  </div>
+
+  {% if is_owner %}
+    <div class="receipt">
+      <ul>
+        {% for item in order_items %}
+          <li><span>{{ item.quantity }}x {{ item.product.name }}</span><span>R$ {{ item.subtotal|floatformat:2 }}</span></li>
+        {% endfor %}
+      </ul>
+      <dl class="bag-sum">
+        <div class="is-total"><dt>Total</dt><dd>R$ {{ order.total|floatformat:2 }}</dd></div>
+        <div><dt>Recebimento</dt><dd>{% if order.delivery_type == "entrega" %}Entrega{% else %}Retirada no local{% endif %}</dd></div>
+      </dl>
+      {% if order.delivery_type == "entrega" %}
+        <p class="receipt__addr">{{ order.address_text }}{% if order.address_complement %} &mdash; {{ order.address_complement }}{% endif %}<br>CEP {{ order.cep }}</p>
+      {% endif %}
+    </div>
+
+    {% if points_earned %}
+      <div class="points-note">
+        Você ganhou <strong>+{{ points_earned }} ponto{{ points_earned|pluralize }}</strong>. Saldo: <strong>{{ points_balance }}</strong>.
+        <a href="{% url 'customers:profile' %}">Ver meus pontos</a>
+      </div>
+    {% endif %}
+
+    {% if whatsapp_url %}
+      <a class="btn btn-whatsapp" href="{{ whatsapp_url }}" target="_blank" rel="noopener">Enviar resumo no WhatsApp</a>
+      <p class="hint hint--center">Vai abrir o WhatsApp com o resumo pronto. É só tocar em enviar.</p>
+    {% endif %}
+  {% endif %}
+
+  <a class="btn btn-outline btn-block bag__back" href="{% url 'catalog:product_list' %}">Voltar ao cardápio</a>
+</section>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Recado enviado{% endblock %}
+
+{% block content %}
+  <div class="empty-state">
+    <h1>Recado enviado!</h1>
+    <p>Assim que possível, a loja entra em contato pelo telefone que você deixou.</p>
+    <a href="{% url 'catalog:product_list' %}" class="btn">Voltar para a loja</a>
+  </div>
+{% endblock %}

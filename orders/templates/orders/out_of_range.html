@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Fora da área de entrega{% endblock %}
+
+{% block content %}
+  <h1>Esse endereço fica fora da nossa área de entrega</h1>
+  <p>
+    A distância calculada foi de aproximadamente <strong>{{ distance_km }} km</strong>,
+    e hoje entregamos só até {{ DELIVERY_RADIUS_KM }} km da loja.
+  </p>
+  <p>Deixe um recado — às vezes conseguimos combinar um jeito, ou você pode retirar na loja.</p>
+
+  <form method="post" style="max-width:480px;">
+    {% csrf_token %}
+    <div class="field">
+      <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+      {{ form.name }}
+    </div>
+    <div class="field">
+      <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+      {{ form.phone }}
+    </div>
+    <div class="field">
+      <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+      {{ form.message }}
+    </div>
+    <button type="submit" class="btn">Enviar recado</button>
+  </form>
+{% endblock %}

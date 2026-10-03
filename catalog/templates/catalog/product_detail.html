@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load static l10n catalog_extras %}
+{% block title %}{{ product.name }}{% endblock %}
+
+{# Tela de produto: sem navbar inferior, a barra de ação fica fixa embaixo #}
+{% block body_class %}pdp-page{% endblock %}
+{% block tabbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .pdp { display:grid; gap:20px; margin:14px 0 0; }
+  @media (min-width:820px){ .pdp { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:36px; margin-top:24px; } }
+
+  .pdp-back { display:inline-flex; align-items:center; gap:6px; margin-top:14px; color:var(--navy-dark);
+    font-weight:600; font-size:.95rem; text-decoration:none; }
+  .pdp-back:hover { text-decoration:none; color:var(--gold-dark); }
+
+  .pdp__media { position:relative; aspect-ratio:1/1; border-radius:18px; overflow:hidden;
+    background:var(--bg); border:1px solid var(--line); box-shadow:0 2px 12px rgba(32,26,16,.06); }
+  .pdp__media img { width:100%; height:100%; object-fit:cover; display:block; }
+  .pdp__ph { width:100%; height:100%; display:grid; place-items:center; font-size:5rem;
+    background:linear-gradient(135deg,var(--bg),var(--line)); }
+  .pdp__badge { position:absolute; top:14px; left:14px; background:var(--gold-light); color:var(--navy-dark);
+    font-weight:700; font-size:.85rem; padding:5px 12px; border-radius:999px; }
+
+  .pdp__cat { display:inline-block; font-size:.8rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--gold-dark); text-decoration:none; }
+  .pdp__cat:hover { text-decoration:underline; }
+  .pdp__name { font-size:clamp(1.6rem,5vw,2.2rem); line-height:1.15; margin:6px 0 10px; }
+  .pdp__price { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .pdp__now { font-size:1.7rem; font-weight:800; color:var(--navy-dark); }
+  .pdp__old { color:var(--ink-muted); text-decoration:line-through; }
+  .pdp__desc { color:var(--ink); margin:0 0 16px; }
+  .pdp__note { display:inline-flex; align-items:center; gap:8px; font-size:.88rem; padding:8px 12px; border-radius:10px;
+    background:var(--paper); border:1px solid var(--line); color:var(--ink-muted); margin:0 8px 8px 0; }
+  .pdp__note--warn { color:var(--gold-dark); border-color:var(--gold-light); }
+  .pdp__note--bad { color:var(--danger); border-color:var(--danger); }
+
+  /* Barra de ação fixa */
+  .pdp-spacer { height:170px; }
+  .pdp-bar { position:fixed; left:0; right:0; bottom:0; z-index:60; background:var(--paper);
+    border-top:1px solid var(--line); box-shadow:0 -8px 24px rgba(32,26,16,.1);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .pdp-bar__in { max-width:1080px; margin:0 auto; display:grid; grid-template-columns:auto 1fr 1fr; gap:10px; align-items:center; }
+  @media (max-width:560px){
+    .pdp-bar__in { grid-template-columns:1fr 1fr; }
+    .pdp-qty { grid-column:1 / -1; justify-self:center; }
+  }
+
+  .pdp-qty { display:flex; align-items:center; border:1px solid var(--line); border-radius:999px; background:#fff; padding:3px; }
+  .pdp-qty button { width:40px; height:40px; border-radius:50%; border:0; background:var(--navy); color:#fff;
+    font-size:1.3rem; line-height:1; cursor:pointer; display:grid; place-items:center; }
+  .pdp-qty button:active { transform:scale(.92); }
+  .pdp-qty button[disabled] { opacity:.35; cursor:not-allowed; }
+  .pdp-qty input { width:46px; text-align:center; border:0; background:transparent; font-weight:800; font-size:1.05rem;
+    color:var(--navy-dark); font-family:inherit; -moz-appearance:textfield; appearance:textfield; }
+  .pdp-qty input::-webkit-outer-spin-button, .pdp-qty input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+
+  .pdp-btn { height:50px; border-radius:14px; font-weight:700; font-size:.98rem; cursor:pointer; font-family:inherit;
+    border:2px solid var(--navy); transition:transform .12s ease, background .12s ease; padding:0 12px; }
+  .pdp-btn:active { transform:scale(.98); }
+  .pdp-btn--ghost { background:transparent; color:var(--navy); }
+  .pdp-btn--ghost:hover { background:var(--bg); }
+  .pdp-btn--solid { background:var(--navy); color:#fff; }
+  .pdp-btn--solid:hover { background:var(--navy-dark); }
+  .pdp-btn small { font-weight:600; opacity:.85; margin-left:4px; }
+
+  .pdp-soldout { max-width:1080px; margin:0 auto; text-align:center; font-weight:700; color:var(--danger); padding:8px 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% with qty=cart_quantities|get_item:product.id|default:0 %}
+{% url 'cart:add' product.id as add_url %}
+{% url 'cart:detail' as cart_url %}
+
+<a class="pdp-back" href="{% url 'catalog:product_list' %}" onclick="if (history.length > 1) { history.back(); return false; }">
+  <span aria-hidden="true">&lsaquo;</span> Voltar
+</a>
+
+<article class="pdp">
+  <div class="pdp__media">
+    {% if product.image %}
+      <img src="{{ product.image.url }}" alt="{{ product.name }}">
+    {% else %}
+      <span class="pdp__ph" aria-hidden="true">🍽️</span>
+    {% endif %}
+    {% if product.has_discount %}<span class="pdp__badge">{{ product.discount_percent_label }}</span>{% endif %}
+  </div>
+
+  <div class="pdp__info">
+    {% if product.category %}
+      <a class="pdp__cat" href="{% url 'catalog:product_list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a>
+    {% endif %}
+    <h1 class="pdp__name">{{ product.name }}</h1>
+
+    <div class="pdp__price">
+      <span class="pdp__now">R$ {{ product.current_price|floatformat:2 }}</span>
+      {% if product.has_discount %}<span class="pdp__old">R$ {{ product.price|floatformat:2 }}</span>{% endif %}
+    </div>
+
+    {% if product.description %}<p class="pdp__desc">{{ product.description|linebreaksbr }}</p>{% endif %}
+
+    {% if not product.in_stock %}
+      <span class="pdp__note pdp__note--bad">Esgotado no momento</span>
+    {% elif product.stock <= 5 %}
+      <span class="pdp__note pdp__note--warn">Últimas unidades: restam {{ product.stock }}</span>
+    {% endif %}
+    {% if qty %}
+      <span class="pdp__note">🛍️ Você já tem {{ qty }} na sacola</span>
+    {% endif %}
+  </div>
+</article>
+
+<div class="pdp-spacer"></div>
+
+<div class="pdp-bar">
+  {% if product.in_stock %}
+    <form method="post" action="{{ add_url }}" id="buy-form" data-price="{{ product.current_price|unlocalize }}" data-max="{{ product.stock }}">
+      {% csrf_token %}
+      <div class="pdp-bar__in">
+        <div class="pdp-qty">
+          <button type="button" data-dec aria-label="Diminuir" disabled>&#8722;</button>
+          <input type="text" name="quantity" value="1" inputmode="numeric" readonly aria-label="Quantidade">
+          <button type="button" data-inc aria-label="Aumentar">+</button>
+        </div>
+        <button type="submit" name="next" value="{{ request.get_full_path }}" class="pdp-btn pdp-btn--ghost">Adicionar à sacola</button>
+        <button type="submit" name="next" value="{{ cart_url }}" class="pdp-btn pdp-btn--solid">Comprar agora <small data-total>R$ {{ product.current_price|floatformat:2 }}</small></button>
+      </div>
+    </form>
+  {% else %}
+    <p class="pdp-soldout">Produto esgotado no momento</p>
+  {% endif %}
+</div>
+{% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var form = document.getElementById("buy-form");
+    if (!form) return;
+    var input = form.querySelector("[name=quantity]");
+    var dec = form.querySelector("[data-dec]");
+    var inc = form.querySelector("[data-inc]");
+    var total = form.querySelector("[data-total]");
+    var price = parseFloat(form.dataset.price) || 0;
+    var max = parseInt(form.dataset.max, 10) || 99;
+
+    function render() {
+      var q = parseInt(input.value, 10) || 1;
+      dec.disabled = q <= 1;
+      inc.disabled = q >= max;
+      total.textContent = "R$ " + (q * price).toFixed(2).replace(".", ",");
+    }
+    dec.addEventListener("click", function () { input.value = Math.max(1, (parseInt(input.value, 10) || 1) - 1); render(); });
+    inc.addEventListener("click", function () { input.value = Math.min(max, (parseInt(input.value, 10) || 1) + 1); render(); });
+    render();
+  })();
+</script>
+{% endblock %}

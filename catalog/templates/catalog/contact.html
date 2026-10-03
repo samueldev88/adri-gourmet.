@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Nossa história{% endblock %}
+
+{% block content %}
+<section class="about">
+
+  <header class="about__head">
+    <img src="{% static 'img/logo-redonda.png' %}" alt="Logo Adriê Gourmet" class="about__logo">
+    <p class="about__eyebrow">Nossa história</p>
+    <h1 class="about__title">Feito com carinho, direto da nossa cozinha</h1>
+  </header>
+
+  <div class="about__story">
+    <p>A Adriê Gourmet nasceu na cozinha de casa, no Rio de Janeiro, do gosto de receber bem e de fazer comida com capricho. <!-- EDITE: conte aqui como tudo começou --></p>
+    <p>O que começou com receitas da família para amigos e vizinhos virou uma lojinha de empadas, salgados e bolos, feitos com ingredientes escolhidos e o mesmo cuidado de sempre. <!-- EDITE: ano, quem criou, receita de destaque --></p>
+    <p class="about__sign">Com carinho, Adriê</p>
+  </div>
+
+  <ul class="about__facts">
+    <li><strong>Empadas</strong><span>Massa que desmancha</span></li>
+    <li><strong>Salgados</strong><span>Fresquinhos</span></li>
+    <li><strong>Bolos</strong><span>Para toda ocasião</span></li>
+  </ul>
+
+  <div class="about__block">
+    <h2>Como receber</h2>
+    <p><strong>Entrega</strong> em até {{ DELIVERY_RADIUS_KM|floatformat:"-1" }} km da loja.<br>
+       <strong>Retirada</strong> no local, sem custo.</p>
+    <p class="about__note">A taxa e o tempo de entrega são confirmados ao finalizar o pedido. Mora mais longe? Deixe um recado que a gente responde.</p>
+  </div>
+
+  <div class="about__block">
+    <h2>Fale com a gente</h2>
+    <a class="btn btn-block" href="https://wa.me/55XXXXXXXXXXX" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+  </div>
+
+  <a class="btn btn-outline btn-block about__back" href="{% url 'catalog:product_list' %}">Voltar ao cardápio</a>
+</section>
+{% endblock %}

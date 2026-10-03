@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Meu perfil{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/profile.css' %}">{% endblock %}
+
+{% block content %}
+<section class="pf">
+
+{% if not identified %}
+  <div class="pf-welcome">
+    <div class="pf-avatar pf-avatar--ghost" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+    </div>
+    <h1 class="pf-welcome__title">Seu perfil</h1>
+    <p class="pf-welcome__text">Informe seus dados para acompanhar seus pedidos e agilizar as próximas compras.</p>
+    <a class="pf-btn pf-btn--gold" href="{% url 'orders:profile_edit' %}">Informar meus dados</a>
+  </div>
+
+{% else %}
+  <header class="pf-hero">
+    <div class="pf-avatar" aria-hidden="true">{{ initial }}</div>
+    <h1 class="pf-name">{{ name }}</h1>
+    <ul class="pf-meta">
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+        {{ phone }}
+      </li>
+      {% if birth %}
+      <li>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21h16v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z"/><path d="M12 11V7M12 4c.8 1 .8 2 0 3-.8-1-.8-2 0-3z"/></svg>
+        {{ birth|date:"d/m/Y" }}
+      </li>
+      {% endif %}
+    </ul>
+  </header>
+
+  <div class="pf-actions">
+    <a class="pf-btn pf-btn--outline" href="{% url 'orders:profile_edit' %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/></svg>
+      Editar dados
+    </a>
+    <form method="post" action="{% url 'orders:profile_forget' %}"
+          onsubmit="return confirm('Sair da conta?\n\nOs seus dados e o histórico de pedidos deste aparelho serão removidos. Seus pontos continuam guardados.');">
+      {% csrf_token %}
+      <button type="submit" class="pf-btn pf-btn--danger">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg>
+        Sair da conta
+      </button>
+    </form>
+  </div>
+
+  <h2 class="pf-title">Meus pedidos {% if orders %}<span class="pf-count">{{ orders|length }}</span>{% endif %}</h2>
+
+  {% for order in orders %}
+    <article class="pf-order">
+      <div class="pf-order__top">
+        <div>
+          <strong class="pf-order__id">Pedido #{{ order.id }}</strong>
+          <span class="pf-order__date">{{ order.created_at|date:"d/m/Y \à\s H:i" }}</span>
+        </div>
+        <span class="pf-chip pf-chip--{{ order.status }}">{{ order.get_status_display }}</span>
+      </div>
+      <ul class="pf-order__items">
+        {% for item in order.items.all %}<li><span>{{ item.quantity }}×</span> {{ item.product.name }}</li>{% endfor %}
+      </ul>
+      <div class="pf-order__bottom">
+        <strong class="pf-order__total">R$ {{ order.total|floatformat:2 }}</strong>
+        <a class="pf-link" href="{% url 'orders:confirmation' order.id %}">Ver pedido &rsaquo;</a>
+      </div>
+    </article>
+  {% empty %}
+    <div class="pf-empty">
+      <span class="pf-empty__emoji" aria-hidden="true">🛍️</span>
+      <p><strong>Nenhum pedido por aqui ainda</strong></p>
+      <p class="pf-empty__sub">Os pedidos feitos neste aparelho aparecem aqui.</p>
+      <a class="pf-btn pf-btn--gold" href="{% url 'catalog:product_list' %}">Ver cardápio</a>
+    </div>
+  {% endfor %}
+{% endif %}
+
+</section>
+{% endblock %}

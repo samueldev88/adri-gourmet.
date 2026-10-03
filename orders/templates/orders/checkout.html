@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Como receber{% endblock %}
+{% block body_class %}has-bag{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block content %}
+<section class="bag">
+  <header class="page-head">
+    <a class="round-btn" href="{% url 'orders:customer_info' %}" aria-label="Voltar">&lsaquo;</a>
+    <a class="round-btn" href="{% url 'catalog:product_list' %}" aria-label="Fechar">&times;</a>
+  </header>
+
+  <h1 class="page-title">Como você quer receber?</h1>
+  <p class="who">Pedido de <strong>{{ customer.name }}</strong> &middot; {{ customer.phone }}
+    <a href="{% url 'orders:customer_info' %}">Alterar</a></p>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="choice-list">
+      <label class="choice">
+        <input type="radio" name="delivery_type" value="entrega" {% if form.delivery_type.value == "entrega" %}checked{% endif %}>
+        <span class="choice__body">
+          <strong>Entrega</strong>
+          <span>A gente leva até você, em até {{ DELIVERY_RADIUS_KM|floatformat:"-1" }} km da loja</span>
+        </span>
+      </label>
+      <label class="choice">
+        <input type="radio" name="delivery_type" value="retirada" {% if form.delivery_type.value != "entrega" %}checked{% endif %}>
+        <span class="choice__body">
+          <strong>Retirada</strong>
+          <span>Você retira no local</span>
+        </span>
+      </label>
+    </div>
+    {% for e in form.delivery_type.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+
+    <div id="address-fields" {% if form.delivery_type.value != "entrega" %}hidden{% endif %}>
+      <label class="ofield {% if form.cep.errors %}has-error{% endif %}">
+        <span>CEP*</span>
+        <input type="text" name="cep" id="f-cep" inputmode="numeric" autocomplete="postal-code" maxlength="9"
+               placeholder="00000-000" value="{{ form.cep.value|default:'' }}">
+      </label>
+      {% for e in form.cep.errors %}<p class="field-error ofield-error">{{ e }}</p>{% endfor %}
+
+      <label class="ofield {% if form.address_text.errors %}has-error{% endif %}">
+        <span>Rua e número*</span>
+        <input type="text" name="address_text" autocomplete="street-address" maxlength="255"
+               value="{{ form.address_text.value|default:'' }}">
+      </label>
+      {% for e in form.address_text.errors %}<p class="field-error ofield-error">{{ e }}</p>{% endfor %}
+
+      <label class="ofield">
+        <span>Complemento</span>
+        <input type="text" name="address_complement" maxlength="100"
+               value="{{ form.address_complement.value|default:'' }}">
+      </label>
+    </div>
+
+    <h2 class="bag__sub">Resumo</h2>
+    <div class="receipt">
+      <ul>
+        {% for item in items %}
+          <li><span>{{ item.quantity }}x {{ item.product.name }}</span><span>R$ {{ item.subtotal|floatformat:2 }}</span></li>
+        {% endfor %}
+      </ul>
+      <dl class="bag-sum">
+        <div class="is-total"><dt>Total</dt><dd>R$ {{ subtotal|floatformat:2 }}</dd></div>
+      </dl>
+    </div>
+
+    <div class="bag-bar">
+      <button type="submit" class="btn">Ir para o pagamento</button>
+    </div>
+  </form>
+</section>
+
+<script>
+(function () {
+  var radios = document.querySelectorAll("input[name=delivery_type]");
+  var box = document.getElementById("address-fields");
+  var cep = document.getElementById("f-cep");
+
+  function sync() {
+    var v = document.querySelector("input[name=delivery_type]:checked");
+    box.hidden = !(v && v.value === "entrega");
+  }
+  radios.forEach(function (r) { r.addEventListener("change", sync); });
+  cep.addEventListener("input", function () {
+    var d = cep.value.replace(/\D/g, "").slice(0, 8);
+    cep.value = d.length > 5 ? d.slice(0, 5) + "-" + d.slice(5) : d;
+  });
+  sync();
+})();
+</script>
+{% endblock %}

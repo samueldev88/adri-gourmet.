@@ -1,0 +1,12 @@
+{% if show %}
+<div class="loy-hint{% if unlocked %} is-unlocked{% endif %}">
+  {% if unlocked %}
+    <p class="loy-hint__line">🎉 Bônus desbloqueado! Você receberá +{{ bonus }} pontos.</p>
+  {% endif %}
+  {% if next_tier %}
+    <p class="loy-hint__line">🔥 Adicione mais R$ {{ missing|floatformat:"-2" }} ao seu pedido e desbloqueie +{{ next_bonus }} pontos de bônus!</p>
+    <div class="loy-bar loy-bar--small" aria-hidden="true"><span style="width:{{ percent }}%"></span></div>
+  {% endif %}
+  <p class="loy-hint__total">⭐ Este pedido vale {{ points }} ponto{{ points|pluralize }}.</p>
+</div>
+{% endif %}

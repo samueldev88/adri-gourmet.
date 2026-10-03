@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Meus dados{% endblock %}
+{% block body_class %}has-bag{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block content %}
+<section class="bag">
+  <header class="page-head">
+    <a class="round-btn" href="{% url 'orders:profile' %}" aria-label="Voltar">&lsaquo;</a>
+    <a class="round-btn" href="{% url 'catalog:product_list' %}" aria-label="Fechar">&times;</a>
+  </header>
+
+  <h1 class="page-title">Meus dados</h1>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    <label class="ofield {% if form.phone.errors %}has-error{% endif %}">
+      <span>Telefone*</span>
+      <input type="tel" name="phone" data-mask="phone" inputmode="numeric" autocomplete="tel-national" maxlength="15"
+             placeholder="(21) 99999-9999" value="{{ form.phone.value|default:'' }}" required>
+    </label>
+    {% for e in form.phone.errors %}<p class="field-error ofield-error">{{ e }}</p>{% endfor %}
+
+    <label class="ofield {% if form.name.errors %}has-error{% endif %}">
+      <span>Seu nome*</span>
+      <input type="text" name="name" autocomplete="name" maxlength="100" value="{{ form.name.value|default:'' }}" required>
+    </label>
+    {% for e in form.name.errors %}<p class="field-error ofield-error">{{ e }}</p>{% endfor %}
+
+    <label class="ofield {% if form.birth_date.errors %}has-error{% endif %}">
+      <span>Data de nascimento*</span>
+      <input type="text" name="birth_date" data-mask="date" inputmode="numeric" maxlength="10"
+             placeholder="dd/mm/aaaa" value="{{ form.birth_date.value|default:'' }}" required>
+    </label>
+    {% for e in form.birth_date.errors %}<p class="field-error ofield-error">{{ e }}</p>{% endfor %}
+
+    <p class="hint">Usamos esses dados só para atender o seu pedido e falar com você sobre ele.</p>
+
+    <div class="bag-bar"><button type="submit" class="btn">Salvar</button></div>
+  </form>
+</section>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/masks.js' %}"></script>{% endblock %}

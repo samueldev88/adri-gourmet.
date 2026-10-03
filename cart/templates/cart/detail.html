@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Sua sacola{% endblock %}
+{% block body_class %}has-bag{% endblock %}
+{% block tabbar %}{% endblock %}
+
+{% block content %}
+<section class="bag">
+  <header class="bag__head">
+    <h1 class="bag__store">Adriê Gourmet</h1>
+    <a href="{% url 'catalog:product_list' %}" class="round-btn" aria-label="Voltar ao cardápio">&times;</a>
+  </header>
+
+  {% if items %}
+    <a class="bag__row" href="{% url 'catalog:product_list' %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      {% if delivery_mode == "entrega" %}
+        <span>Entrega{% if delivery_distance_km %} &middot; você está a {{ delivery_distance_km|floatformat:1 }} km{% endif %}</span>
+        <em>Alterar</em>
+      {% elif delivery_mode == "retirada" %}
+        <span>Retirada no local</span>
+        <em>Alterar</em>
+      {% else %}
+        <span>Como você quer receber o pedido?</span>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      {% endif %}
+    </a>
+
+    <div class="bag__title-row">
+      <h2>Sua sacola</h2>
+      <form method="post" action="{% url 'cart:clear' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'cart:detail' %}">
+        <button type="submit" class="link-btn">Limpar</button>
+      </form>
+    </div>
+
+    {% for item in items %}
+      {% url 'cart:add' item.product.id as add_url %}
+      {% url 'cart:update' item.product.id as update_url %}
+      {% url 'cart:remove' item.product.id as remove_url %}
+      <article class="bag-item">
+        <div class="bag-item__main">
+          <div class="bag-item__top">
+            <span>{{ item.product.name }}</span>
+            <span class="bag-item__price">R$ {{ item.subtotal|floatformat:2 }}</span>
+          </div>
+          <div class="bag-item__actions">
+            <div class="stepper">
+              <form method="post" action="{{ update_url }}">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="{{ item.quantity|add:'-1' }}">
+                <input type="hidden" name="next" value="{% url 'cart:detail' %}">
+                <button type="submit" class="stepper-btn" aria-label="Diminuir">&#8722;</button>
+              </form>
+              <span class="stepper-qty">{{ item.quantity }}</span>
+              <form method="post" action="{{ add_url }}">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="next" value="{% url 'cart:detail' %}">
+                <button type="submit" class="stepper-btn" aria-label="Aumentar">+</button>
+              </form>
+            </div>
+            <form method="post" action="{{ remove_url }}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'cart:detail' %}">
+              <button type="submit" class="bag-item__remove">Remover</button>
+            </form>
+          </div>
+        </div>
+        {% if item.product.image %}
+          <img class="bag-item__thumb" src="{{ item.product.image.url }}" alt="">
+        {% endif %}
+      </article>
+    {% endfor %}
+
+    <a class="bag__more" href="{% url 'catalog:product_list' %}">Adicionar mais itens</a>
+
+    {% if suggestions %}
+      <div class="bag__title-row"><h2>Peça também</h2></div>
+      <div class="suggest">
+        {% for product in suggestions %}
+          <div class="suggest-card">
+            <a class="suggest-card__img" href="{% url 'catalog:product_detail' product.slug %}">
+              {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% endif %}
+            </a>
+            <div class="suggest-card__body">
+              <span class="suggest-card__name">{{ product.name }}</span>
+              <span class="suggest-card__price">R$ {{ product.current_price|floatformat:2 }}</span>
+              <form method="post" action="{% url 'cart:add' product.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="next" value="{% url 'cart:detail' %}">
+                <button type="submit" class="btn-add">Adicionar</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <dl class="bag-sum">
+      <div><dt>Subtotal</dt><dd>R$ {{ subtotal|floatformat:2 }}</dd></div>
+      <div><dt>Taxa de entrega</dt><dd>{% if delivery_mode == "retirada" %}Grátis{% else %}A definir{% endif %}</dd></div>
+      <div class="is-total"><dt>Total</dt><dd>R$ {{ subtotal|floatformat:2 }}</dd></div>
+    </dl>
+
+    <div class="bag-bar">
+      <a class="btn" href="{% url 'orders:customer_info' %}">Continuar pedido</a>
+    </div>
+  {% else %}
+    <p class="empty-state">Sua sacola está vazia.</p>
+    <a class="btn btn-block" href="{% url 'catalog:product_list' %}">Ver cardápio</a>
+  {% endif %}
+</section>
+{% endblock %}

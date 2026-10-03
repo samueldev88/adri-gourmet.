@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Promoções{% endblock %}
+
+{% block content %}
+<section class="loy">
+
+  {% if not identified %}
+    <div class="loy-hero loy-hero--center">
+      <span class="loy-chip">⭐ Programa de fidelidade</span>
+      <h1 class="loy-hero__title">Ganhe pontos a cada pedido</h1>
+      <p class="loy-hero__text">Informe seus dados para ver seus pontos e trocar por recompensas.</p>
+      <a class="loy-btn loy-btn--gold" href="{% url 'orders:profile_edit' %}">Informar meus dados</a>
+    </div>
+
+  {% else %}
+    <div class="loy-hero">
+      <div class="loy-hero__top">
+        <span class="loy-chip">⭐ Fidelidade</span>
+        {% if first_name %}<span class="loy-hero__hello">Olá, {{ first_name|capfirst }}</span>{% endif %}
+      </div>
+      <p class="loy-hero__label">Seus pontos</p>
+      <p class="loy-hero__points"><span data-count="{{ balance }}">{{ balance }}</span><small>pts</small></p>
+    </div>
+
+    {% if pending %}
+      <div class="loy-card">
+        <h2 class="loy-card__title">Aguardando entrega</h2>
+        <ul class="loy-pending">
+          {% for r in pending %}
+            <li><span>{{ r.reward_name }}</span><code>{{ r.code }}</code></li>
+          {% endfor %}
+        </ul>
+        <p class="loy-note">Mostre o código para a loja ao retirar ou receber.</p>
+      </div>
+    {% endif %}
+
+    <div class="loy-head">
+      <h2 class="loy-title">Recompensas</h2>
+      <p class="loy-sub">Troque seus pontos por produtos da loja</p>
+    </div>
+
+    <div class="loy-rewards">
+      {% for r in rewards %}
+        <article class="loy-reward {% if r.affordable %}is-ready{% else %}is-locked{% endif %}">
+          <div class="loy-reward__media">
+            {% if r.image_url %}
+              <img src="{{ r.image_url }}" alt="{{ r.display_name }}" loading="lazy">
+            {% else %}
+              <span class="loy-reward__emoji" aria-hidden="true">{{ r.emoji|default:"🎁" }}</span>
+            {% endif %}
+            <span class="loy-reward__badge">{{ r.points_cost }} pts</span>
+          </div>
+          <div class="loy-reward__body">
+            <h3 class="loy-reward__name">{{ r.display_name }}</h3>
+            {% if r.affordable %}
+              <form method="post" action="{% url 'loyalty:redeem' r.id %}"
+                    onsubmit="return confirm('Resgatar {{ r.display_name|escapejs }} por {{ r.points_cost }} pontos?');">
+                {% csrf_token %}
+                <button type="submit" class="loy-btn">Resgatar</button>
+              </form>
+            {% else %}
+              <p class="loy-reward__missing">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                Faltam {{ r.missing }} pts
+              </p>
+            {% endif %}
+          </div>
+        </article>
+      {% empty %}
+        <p class="loy-note">Nenhuma recompensa disponível no momento.</p>
+      {% endfor %}
+    </div>
+
+    <div class="loy-head">
+      <h2 class="loy-title">Histórico</h2>
+    </div>
+    <div class="loy-card loy-card--flush">
+      {% if transactions %}
+        <ul class="loy-tx-list">
+          {% for t in transactions %}
+            <li class="loy-tx">
+              <span class="loy-tx__icon {% if t.points > 0 %}is-plus{% else %}is-minus{% endif %}" aria-hidden="true">{% if t.points > 0 %}+{% else %}&minus;{% endif %}</span>
+              <span class="loy-tx__main">
+                <strong>{{ t.description }}</strong>
+                <small>{{ t.created_at|date:"d/m/Y" }}{% if t.bonus_points %} &middot; inclui +{{ t.bonus_points }} de bônus{% endif %}</small>
+              </span>
+              <span class="loy-tx__pts {% if t.points > 0 %}is-plus{% else %}is-minus{% endif %}">{{ t.signed_points }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="loy-empty">Seus pontos aparecem aqui depois do primeiro pedido confirmado.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="loy-head">
+    <h2 class="loy-title">Como ganhar pontos</h2>
+  </div>
+  <div class="loy-earn">
+    <div class="loy-earn__base">
+      <strong>R$ 1 = 1 ponto</strong>
+      <span>em todo pedido</span>
+    </div>
+    <div class="loy-tiers">
+      {% for value, bonus in tiers %}
+        <div class="loy-tier">
+          <small>a partir de</small>
+          <strong>R$ {{ value }}</strong>
+          <span>+{{ bonus }} pts</span>
+        </div>
+      {% endfor %}
+    </div>
+    <p class="loy-note">Os bônus não se somam: vale só o da maior faixa que o pedido atingir.</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var el = document.querySelector("[data-count]");
+    if (!el) return;
+    var end = parseInt(el.dataset.count, 10) || 0;
+    if (!end || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var start = null, dur = 900;
+    function step(ts) {
+      if (!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    el.textContent = "0";
+    requestAnimationFrame(step);
+  })();
+</script>
+{% endblock %}

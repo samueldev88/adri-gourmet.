@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% load static %}
+{% load catalog_extras %}
+{% block title %}{% if current_category %}{{ current_category.name }}{% else %}Todos os produtos{% endif %}{% endblock %}
+
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/cards.css' %}">{% endblock %}
+
+{% block hero %}
+<section class="store-hero">
+  {# Foto de capa: salve em static/img/capa.jpg (sugestão: 1600x600, foto das empadas/bolos) #}
+  <div class="store-cover"></div>
+
+  <div class="store-card">
+    <img src="{% static 'img/logo-redonda.png' %}" alt="Logo Adriê Gourmet" class="store-avatar">
+    <h1 class="store-name">Adriê Gourmet</h1>
+    <p class="store-meta">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      <span>Rio de Janeiro - RJ</span>
+      <i class="dot" aria-hidden="true"></i>
+      <a href="{% url 'catalog:contact' %}">Mais informações</a>
+    </p>
+    <p class="store-status">Aberto até às 18h45</p>
+  </div>
+
+  {% with mode=request.session.delivery_mode dist=request.session.delivery_distance_km %}
+  <div class="container">
+    <button type="button" class="info-row" data-open-delivery>
+      {% if mode == "entrega" %}
+        <svg class="info-row__icon"><use href="#i-moto"/></svg>
+        <span>Entrega &middot; {% if dist %}você está a {{ dist|floatformat:1 }} km{% else %}em até {{ DELIVERY_RADIUS_KM|default:"3" }} km{% endif %}</span>
+        <em class="info-row__change">Alterar</em>
+      {% elif mode == "retirada" %}
+        <svg class="info-row__icon"><use href="#i-walk"/></svg>
+        <span>Retirada no local</span>
+        <em class="info-row__change">Alterar</em>
+      {% else %}
+        <svg class="info-row__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5M12 17h.01"/></svg>
+        <span>Como você quer receber o pedido?</span>
+        <svg class="info-row__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      {% endif %}
+    </button>
+  </div>
+
+  {# Ícones reutilizáveis #}
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-moto" viewBox="0 0 24 24">
+      <circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/>
+      <path d="M8.5 16.5 11 10h4.5l3 6.5"/><path d="M13 10 11.5 7H9"/><path d="M15.5 10l1-2.5h2"/>
+    </symbol>
+    <symbol id="i-walk" viewBox="0 0 24 24">
+      <circle cx="14" cy="4" r="2"/><path d="M14 7.5 12 13"/><path d="M12 13l3 3.5-.5 4.5"/>
+      <path d="M12 13l-2 4-2.5 3"/><path d="M13.2 9l3.3 2"/><path d="M13.2 9 10 10.5 9 13"/>
+    </symbol>
+  </svg>
+
+  {# Janela para escolher como receber o pedido #}
+  <dialog id="delivery-dialog" class="sheet" data-needs-choice="{% if not mode %}1{% endif %}" data-check-url="{% url 'catalog:check_cep' %}">
+    <div class="sheet__body">
+      <form method="dialog" class="sheet__close">
+        <button type="submit" aria-label="Fechar">&times;</button>
+      </form>
+
+      {# Passo 1: entrega ou retirada #}
+      <div data-step-choose>
+        <h2 class="sheet__title">Como você quer receber o pedido?</h2>
+        <form method="post" action="{% url 'catalog:set_delivery_mode' %}" class="option-list">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+          <button type="button" class="option option--btn {% if mode == 'entrega' %}is-selected{% endif %}" data-choose-delivery>
+            <svg class="option__icon"><use href="#i-moto"/></svg>
+            <span class="option__text">
+              <strong>Entrega</strong>
+              <span>A gente leva até você</span>
+            </span>
+          </button>
+
+          <button type="submit" name="mode" value="retirada" class="option option--btn {% if mode == 'retirada' %}is-selected{% endif %}">
+            <svg class="option__icon"><use href="#i-walk"/></svg>
+            <span class="option__text">
+              <strong>Retirada</strong>
+              <span>Você retira no local</span>
+            </span>
+          </button>
+        </form>
+      </div>
+
+      {# Passo 2: CEP e distância #}
+      <div data-step-cep hidden>
+        <button type="button" class="cep-back" data-cep-back>&lsaquo; Voltar</button>
+        <h2 class="sheet__title">Qual o seu CEP?</h2>
+        <p class="cep-help">Vamos ver se a gente entrega aí e a que distância você está da loja.</p>
+
+        <div class="cep-row">
+          <input type="text" id="cep-input" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000" value="{{ request.session.delivery_cep|default:'' }}" aria-label="CEP">
+          <button type="button" class="btn" id="cep-go">Calcular</button>
+        </div>
+
+        <p class="cep-result" role="status" aria-live="polite" data-cep-result></p>
+
+        <div class="cep-after" data-cep-after hidden>
+          <button type="button" class="btn btn-block" data-continue hidden>Continuar pedindo</button>
+          <button type="button" class="btn btn-outline btn-block" data-go-pickup hidden>Escolher retirada</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+  {% endwith %}
+</section>
+
+<script>
+  (function () {
+    var dlg = document.getElementById("delivery-dialog");
+    if (!dlg || typeof dlg.showModal !== "function") return;
+
+    var stepChoose = dlg.querySelector("[data-step-choose]");
+    var stepCep = dlg.querySelector("[data-step-cep]");
+    var input = document.getElementById("cep-input");
+    var goBtn = document.getElementById("cep-go");
+    var result = dlg.querySelector("[data-cep-result]");
+    var after = dlg.querySelector("[data-cep-after]");
+    var continueBtn = dlg.querySelector("[data-continue]");
+    var pickupBtn = dlg.querySelector("[data-go-pickup]");
+    var tokenInput = dlg.querySelector("[name=csrfmiddlewaretoken]");
+
+    function showStep(name) {
+      stepChoose.hidden = name !== "choose";
+      stepCep.hidden = name !== "cep";
+    }
+
+    function setResult(text, kind) {
+      result.textContent = text;
+      result.className = "cep-result" + (kind ? " is-" + kind : "");
+    }
+
+    function formatKm(n) { return String(n).replace(".", ","); }
+
+    function maskCep() {
+      var d = input.value.replace(/\D/g, "").slice(0, 8);
+      input.value = d.length > 5 ? d.slice(0, 5) + "-" + d.slice(5) : d;
+    }
+
+    function calculate() {
+      var cep = input.value.replace(/\D/g, "");
+      after.hidden = true;
+      continueBtn.hidden = true;
+      pickupBtn.hidden = true;
+      if (cep.length !== 8) { setResult("Digite um CEP com 8 números.", "bad"); return; }
+
+      goBtn.disabled = true;
+      setResult("Calculando...", "");
+
+      fetch(dlg.dataset.checkUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": tokenInput ? tokenInput.value : "",
+          "X-Requested-With": "XMLHttpRequest"
+        },
+        body: new URLSearchParams({ cep: cep })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.ok) { setResult(d.error || "Não foi possível calcular agora.", "bad"); return; }
+          if (d.in_range) {
+            setResult("Você está a " + formatKm(d.distance_km) + " km da loja. A gente entrega aí!", "ok");
+            continueBtn.hidden = false;
+          } else {
+            setResult("Você está a " + formatKm(d.distance_km) + " km da loja e a gente entrega em até " + formatKm(d.radius_km) + " km.", "bad");
+            pickupBtn.hidden = false;
+          }
+          after.hidden = false;
+        })
+        .catch(function () { setResult("Não foi possível calcular agora. Tente de novo.", "bad"); })
+        .then(function () { goBtn.disabled = false; });
+    }
+
+    document.querySelectorAll("[data-open-delivery]").forEach(function (btn) {
+      btn.addEventListener("click", function () { showStep("choose"); dlg.showModal(); });
+    });
+    dlg.querySelector("[data-choose-delivery]").addEventListener("click", function () {
+      showStep("cep"); maskCep(); input.focus();
+    });
+    dlg.querySelector("[data-cep-back]").addEventListener("click", function () { showStep("choose"); });
+    input.addEventListener("input", maskCep);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); calculate(); } });
+    goBtn.addEventListener("click", calculate);
+    continueBtn.addEventListener("click", function () { window.location.reload(); });
+    pickupBtn.addEventListener("click", function () {
+      dlg.querySelector("button[name=mode][value=retirada]").click();
+    });
+
+    // clicar fora da janela fecha
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+
+    // abre sozinha na primeira visita, uma vez por aba
+    if (dlg.dataset.needsChoice === "1") {
+      try {
+        if (!sessionStorage.getItem("deliveryAsked")) {
+          sessionStorage.setItem("deliveryAsked", "1");
+          dlg.showModal();
+        }
+      } catch (err) { /* sem sessionStorage, só não abre sozinha */ }
+    }
+  })();
+</script>
+{% endblock %}
+
+{% block content %}
+  <h2 class="section-title">
+    {% if current_category %}{{ current_category.name }}{% else %}Qual sua preferência de prato hoje?{% endif %}
+  </h2>
+
+  <form method="get" action="{% url 'catalog:product_list' %}" class="search-bar">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+      <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    {% if current_category %}<input type="hidden" name="category" value="{{ current_category.slug }}">{% endif %}
+    <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Qual produto procura?" class="search-input" autocomplete="off">
+  </form>
+
+  <nav class="chips" aria-label="Categorias">
+    <a href="{% url 'catalog:product_list' %}" class="chip {% if not current_category %}is-active{% endif %}">Todos</a>
+    {% for category in categories %}
+      <a href="{% url 'catalog:product_list' %}?category={{ category.slug }}" class="chip {% if current_category.slug == category.slug %}is-active{% endif %}">{{ category.name }}</a>
+    {% endfor %}
+  </nav>
+
+  {% if products %}
+    <div class="product-grid">
+      {% for product in products %}
+        {% with qty=cart_quantities|get_item:product.id|default:0 %}
+        {% url 'cart:add' product.id as add_url %}
+        {% url 'cart:update' product.id as update_url %}
+        <article class="pc{% if not product.in_stock %} is-soldout{% endif %}">
+          <div class="pc__media">
+            <a href="{% url 'catalog:product_detail' product.slug %}" class="pc__link" aria-label="{{ product.name }}">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+              {% else %}
+                <span class="pc__ph" aria-hidden="true">🍽️</span>
+              {% endif %}
+            </a>
+            {% if product.has_discount %}<span class="pc__badge">{{ product.discount_percent_label }}</span>{% endif %}
+
+            {% if product.in_stock %}
+              <div class="pc__ctl">
+                {% if qty %}
+                  <div class="pc__stepper">
+                    <form method="post" action="{{ update_url }}">
+                      {% csrf_token %}
+                      <input type="hidden" name="quantity" value="{{ qty|add:'-1' }}">
+                      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                      <button type="submit" aria-label="Diminuir">&#8722;</button>
+                    </form>
+                    <span class="pc__qty">{{ qty }}</span>
+                    <form method="post" action="{{ add_url }}">
+                      {% csrf_token %}
+                      <input type="hidden" name="quantity" value="1">
+                      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                      <button type="submit" aria-label="Aumentar">+</button>
+                    </form>
+                  </div>
+                {% else %}
+                  <form method="post" action="{{ add_url }}">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="pc__add" aria-label="Adicionar {{ product.name }}">+</button>
+                  </form>
+                {% endif %}
+              </div>
+            {% else %}
+              <span class="pc__soldout">Esgotado</span>
+            {% endif %}
+          </div>
+
+          <div class="pc__body">
+            <a href="{% url 'catalog:product_detail' product.slug %}" class="pc__name">{{ product.name }}</a>
+            <div class="pc__price">
+              <span class="pc__now">R$ {{ product.current_price|floatformat:2 }}</span>
+              {% if product.has_discount %}<span class="pc__old">R$ {{ product.price|floatformat:2 }}</span>{% endif %}
+            </div>
+          </div>
+        </article>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty-state">Nenhum produto por aqui ainda.</p>
+  {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<div class="cart-bar-slot">
+  {% if cart and cart|length %}
+    <a href="{% url 'cart:detail' %}" class="cart-bar">
+      <span class="cart-bar__count">{{ cart|length }}</span>
+      <span class="cart-bar__label">Ver sacola</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+  {% endif %}
+</div>
+<script>
+  (function () {
+    if (!window.fetch || !document.querySelector(".product-grid")) return;
+    function refresh() {
+      return fetch(location.href, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, "text/html");
+          [".product-grid", ".cart-bar-slot", ".tabbar"].forEach(function (sel) {
+            var a = document.querySelector(sel), b = doc.querySelector(sel);
+            if (a && b) a.replaceWith(b);
+          });
+        });
+    }
+    document.addEventListener("submit", function (e) {
+      var f = e.target;
+      if (!f.closest || !f.closest(".pc__ctl")) return;
+      e.preventDefault();
+      var btn = f.querySelector("button"); if (btn) btn.disabled = true;
+      fetch(f.action, { method: "POST", body: new FormData(f), headers: { "X-Requested-With": "XMLHttpRequest" } })
+        .then(refresh)
+        .catch(function () { f.submit(); });
+    });
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+<a class="loy-summary" href="{% url 'loyalty:home' %}">
+  <span class="loy-summary__icon">⭐</span>
+  <span class="loy-summary__text">
+    {% if identified %}
+      <strong>Seus pontos: {{ balance }} pts</strong>
+      {% if next_reward %}
+        <small>Faltam {{ next_reward.missing }} para {{ next_reward.emoji }} {{ next_reward.name }}</small>
+      {% else %}
+        <small>Você já pode resgatar uma recompensa! 🎉</small>
+      {% endif %}
+    {% else %}
+      <strong>Programa de fidelidade</strong>
+      <small>Ganhe pontos a cada pedido</small>
+    {% endif %}
+  </span>
+  <span class="loy-summary__arrow">&rsaquo;</span>
+</a>

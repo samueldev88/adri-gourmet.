@@ -1,0 +1,105 @@
+.loy { --navy:#0E1B2E; --navy-2:#17304f; --gold:#C9A24B; --gold-2:#E8CB7C; --cream:#FBF6EA; --line:#E6DCC3; --muted:#6b7280;
+  max-width:640px; margin:0 auto; padding:8px 0 36px; }
+.loy svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+/* ---------- topo ---------- */
+.loy-hero { position:relative; overflow:hidden; margin-top:14px; padding:24px 22px 30px; border-radius:24px; color:#fff;
+  background:radial-gradient(circle at 88% 0%, rgba(232,203,124,.30), transparent 48%), linear-gradient(160deg, var(--navy), var(--navy-2));
+  box-shadow:0 16px 36px rgba(14,27,46,.28); }
+.loy-hero::after { content:""; position:absolute; right:-50px; bottom:-70px; width:190px; height:190px; border-radius:50%;
+  border:1px solid rgba(232,203,124,.28); box-shadow:0 0 0 24px rgba(232,203,124,.06), 0 0 0 52px rgba(232,203,124,.03); pointer-events:none; }
+.loy-hero__top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.loy-hero__hello { font-size:.95rem; opacity:.9; }
+.loy-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; font-size:.75rem; font-weight:700;
+  letter-spacing:.04em; color:var(--gold-2); background:rgba(232,203,124,.12); border:1px solid rgba(232,203,124,.3); }
+.loy-hero__label { margin:26px 0 0; text-transform:uppercase; letter-spacing:.14em; font-size:.74rem; color:var(--gold-2); }
+.loy-hero__points { display:flex; align-items:baseline; gap:8px; margin:4px 0 0; font-family:'Fraunces', serif; line-height:1; }
+.loy-hero__points span { font-size:clamp(3.6rem, 18vw, 5rem); font-weight:700; font-variant-numeric:tabular-nums;
+  background:linear-gradient(180deg, #fff 30%, var(--gold-2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.loy-hero__points small { font-family:system-ui, sans-serif; font-size:1.1rem; font-weight:600; color:var(--gold-2); }
+.loy-hero--center { text-align:center; padding:34px 22px; }
+.loy-hero--center .loy-hero__title { font-family:'Fraunces', serif; font-size:1.7rem; margin:16px 0 8px; }
+.loy-hero--center .loy-hero__text { margin:0 0 20px; opacity:.85; }
+
+/* ---------- títulos / blocos ---------- */
+.loy-head { margin:30px 0 12px; }
+.loy-title { font-family:'Fraunces', serif; font-size:1.35rem; color:var(--navy); margin:0; }
+.loy-sub { margin:2px 0 0; color:var(--muted); font-size:.9rem; }
+.loy-note { color:var(--muted); font-size:.84rem; margin:12px 0 0; }
+.loy-card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; margin-top:16px; box-shadow:0 2px 10px rgba(14,27,46,.04); }
+.loy-card--flush { padding:4px 16px; margin-top:0; }
+.loy-card__title { font-family:'Fraunces', serif; font-size:1.05rem; margin:0 0 8px; color:var(--navy); }
+.loy-empty { color:var(--muted); font-size:.92rem; padding:16px 0; margin:0; text-align:center; }
+
+/* ---------- botões ---------- */
+.loy-btn { display:inline-flex; align-items:center; justify-content:center; width:100%; padding:11px 14px; border:0; border-radius:12px;
+  background:var(--navy); color:#fff; font:inherit; font-weight:700; font-size:.92rem; cursor:pointer; text-decoration:none; transition:transform .15s ease, background .2s ease; }
+.loy-btn:hover { background:var(--navy-2); }
+.loy-btn:active { transform:scale(.98); }
+.loy-btn--gold { width:auto; padding:12px 26px; color:var(--navy); background:linear-gradient(145deg, var(--gold-2), var(--gold)); box-shadow:0 6px 16px rgba(201,162,75,.4); }
+.loy-btn--gold:hover { background:linear-gradient(145deg, #f0d78c, var(--gold)); }
+
+/* ---------- recompensas ---------- */
+.loy-rewards { display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; }
+@media (min-width:560px) { .loy-rewards { grid-template-columns:repeat(3, 1fr); } }
+.loy-reward { display:flex; flex-direction:column; background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden;
+  box-shadow:0 2px 10px rgba(14,27,46,.05); transition:transform .2s ease, box-shadow .2s ease; }
+.loy-reward:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(14,27,46,.12); }
+.loy-reward__media { position:relative; aspect-ratio:4/3; display:grid; place-items:center; background:linear-gradient(145deg, var(--cream), #f3ead2); overflow:hidden; }
+.loy-reward__media img { width:100%; height:100%; object-fit:cover; display:block; transition:filter .3s ease; }
+.loy-reward__emoji { font-size:3.2rem; filter:drop-shadow(0 4px 8px rgba(14,27,46,.15)); }
+.loy-reward__badge { position:absolute; left:8px; bottom:8px; padding:4px 10px; border-radius:999px; font-size:.78rem; font-weight:700;
+  color:var(--gold-2); background:rgba(14,27,46,.92); backdrop-filter:blur(4px); }
+.loy-reward__body { display:flex; flex-direction:column; gap:10px; padding:12px; flex:1; justify-content:space-between; }
+.loy-reward__name { font-size:.98rem; font-weight:700; line-height:1.25; color:var(--navy); margin:0; }
+.loy-reward form { margin:0; }
+.loy-reward__missing { display:flex; align-items:center; gap:6px; margin:0; padding:9px 10px; border-radius:10px; background:#f5f3ee; color:var(--muted); font-size:.82rem; font-weight:600; }
+.loy-reward.is-locked .loy-reward__media img { filter:grayscale(.65) opacity(.8); }
+.loy-reward.is-locked .loy-reward__emoji { opacity:.55; filter:grayscale(.6); }
+.loy-reward.is-ready { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,162,75,.2), 0 10px 24px rgba(201,162,75,.18); }
+.loy-reward.is-ready .loy-reward__badge { color:var(--navy); background:linear-gradient(145deg, var(--gold-2), var(--gold)); }
+
+/* ---------- histórico ---------- */
+.loy-tx-list { list-style:none; margin:0; padding:0; }
+.loy-tx { display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid #f1ebd9; }
+.loy-tx:last-child { border-bottom:0; }
+.loy-tx__icon { width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:1.1rem; flex:none; }
+.loy-tx__icon.is-plus { background:#e3f4ea; color:#17653a; }
+.loy-tx__icon.is-minus { background:#fbe6e3; color:#9c2e24; }
+.loy-tx__main { flex:1; min-width:0; display:flex; flex-direction:column; }
+.loy-tx__main strong { font-size:.93rem; color:var(--navy); }
+.loy-tx__main small { color:var(--muted); font-size:.78rem; }
+.loy-tx__pts { font-weight:700; font-variant-numeric:tabular-nums; }
+.loy-tx__pts.is-plus { color:#17653a; }
+.loy-tx__pts.is-minus { color:#9c2e24; }
+
+/* ---------- resgates pendentes ---------- */
+.loy-pending { list-style:none; margin:0; padding:0; }
+.loy-pending li { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 0; }
+.loy-pending code { background:var(--cream); border:1px dashed var(--gold); padding:5px 12px; border-radius:8px; font-weight:700; letter-spacing:.12em; }
+
+/* ---------- como ganhar ---------- */
+.loy-earn { background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:0 2px 10px rgba(14,27,46,.04); }
+.loy-earn__base { display:flex; justify-content:space-between; align-items:center; padding-bottom:14px; margin-bottom:14px; border-bottom:1px dashed var(--line); }
+.loy-earn__base strong { font-family:'Fraunces', serif; font-size:1.2rem; color:var(--navy); }
+.loy-earn__base span { color:var(--muted); font-size:.88rem; }
+.loy-tiers { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+.loy-tier { display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 6px; border-radius:14px; text-align:center; background:var(--cream); border:1px solid var(--line); }
+.loy-tier small { color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; }
+.loy-tier strong { color:var(--navy); font-size:1rem; }
+.loy-tier span { margin-top:4px; padding:3px 10px; border-radius:999px; font-size:.8rem; font-weight:700; color:var(--navy); background:linear-gradient(145deg, var(--gold-2), var(--gold)); }
+
+/* ---------- aviso de bônus (carrinho / checkout) ---------- */
+.loy-hint { background:#FBF6EA; border:1px solid #E6DCC3; border-left:4px solid #C9A24B; border-radius:12px; padding:12px 14px; margin:14px 0; }
+.loy-hint.is-unlocked { background:#F1F8F2; border-color:#BFDCC6; border-left-color:#1d7a46; }
+.loy-hint__line { margin:0 0 4px; font-weight:600; }
+.loy-hint__total { margin:6px 0 0; font-size:.85rem; color:#6b7280; }
+.loy-bar { height:8px; background:#EFE6CC; border-radius:999px; overflow:hidden; margin-top:8px; }
+.loy-bar > span { display:block; height:100%; background:linear-gradient(90deg, #C9A24B, #f0d27a); border-radius:999px; transition:width .6s ease; }
+
+/* ---------- cartão resumido ---------- */
+.loy-summary { display:flex; align-items:center; gap:12px; background:linear-gradient(160deg, #0E1B2E, #17304f); color:#fff; border-radius:14px; padding:14px 16px; margin:14px 0; text-decoration:none; }
+.loy-summary__icon { font-size:1.6rem; }
+.loy-summary__text { flex:1; display:flex; flex-direction:column; }
+.loy-summary__text small { color:#C9A24B; }
+.loy-summary__arrow { font-size:1.6rem; color:#C9A24B; }
